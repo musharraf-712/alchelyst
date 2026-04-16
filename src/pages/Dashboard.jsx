@@ -6,7 +6,6 @@ import {
   FileText,
   CreditCard,
   ChevronRight,
-  Plus,
 } from "lucide-react";
 
 import activityData from "../data/activityData.json";
@@ -36,43 +35,58 @@ const PER_PAGE = 5;
 
 const isPending = (row) => {
   if (row.progress !== undefined && row.progress < 100) return true;
-
   if (row.steps?.some((s) => s.status === "pending")) return true;
-
   const status = (row.status || "").toLowerCase();
-  if (["pending", "draft", "scheduled", "pre-req check"].includes(status)) return true;
-
-  if (row.tags?.some((t) => ["pending", "pre-req check"].includes(t.toLowerCase()))) return true;
-
-  return false;
+  return ["pending", "draft", "scheduled", "pre-req check"].includes(status) || 
+         row.tags?.some((t) => ["pending", "pre-req check"].includes(t.toLowerCase()));
 };
 
 const isAtRisk = (row) => {
   if (row.steps?.some((s) => s.status === "warn")) return true;
-
   const status = (row.status || "").toLowerCase();
-  if (["at risk", "overdue", "warn"].includes(status)) return true;
-
-  if (row.tags?.some((t) => ["at risk", "overdue"].includes(t.toLowerCase()))) return true;
-
-  return false;
+  return ["at risk", "overdue", "warn"].includes(status) || 
+         row.tags?.some((t) => ["at risk", "overdue"].includes(t.toLowerCase()));
 };
 
 function applyChipFilter(rows, filter) {
-  if (filter === "All funds") return rows;
-
+  if (!filter || filter === "All funds") return rows;
   if (filter === "EBBR Holdings" || filter === "Steerhead NL") {
     return rows.filter((row) =>
       (row.fund || "").toLowerCase().includes(filter.toLowerCase())
     );
   }
-
   if (filter === "Pending action") return rows.filter(isPending);
-
   if (filter === "At risk") return rows.filter(isAtRisk);
-
   return rows;
 }
+
+// Fixed helper to ensure string columns are turned into objects the Table can read
+const makeColumns = (cols) =>
+  cols.map((c) => {
+    if (typeof c === "object" && c.key) return c; // Already processed
+
+    const key = c.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    if (key === "status" || key === "tags") {
+      return {
+        key,
+        label: c,
+        render: (val) => {
+          if (Array.isArray(val)) {
+            return (
+              <div className="flex flex-wrap gap-1">
+                {val.map((t, i) => (
+                  <StatusPill key={i} label={t} />
+                ))}
+              </div>
+            );
+          }
+          return <StatusPill label={val} />;
+        },
+      };
+    }
+    return { key, label: c };
+  });
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(0);
@@ -82,14 +96,12 @@ export default function Dashboard() {
 
   const modal = useModal();
 
-  /* 🔥 IMPORTANT FIX */
   useEffect(() => {
     setPages({});
   }, [activeFilter, searchQuery]);
 
   const getPage = (key) => pages[key] || 1;
-  const setPage = (key, p) =>
-    setPages((prev) => ({ ...prev, [key]: p }));
+  const setPage = (key, p) => setPages((prev) => ({ ...prev, [key]: p }));
 
   const navColumns = useMemo(
     () => [
@@ -98,10 +110,8 @@ export default function Dashboard() {
         label: "Fund & entity",
         render: (_, row) => (
           <div>
-            <div className="font-medium">{row.fund}</div>
-            <div className="text-xs text-gray-500">
-              {row.entity}
-            </div>
+            <div className="font-medium text-sm text-gray-900">{row.fund}</div>
+            <div className="text-xs text-gray-500">{row.entity}</div>
           </div>
         ),
       },
@@ -111,7 +121,7 @@ export default function Dashboard() {
         label: "Workflow steps",
         render: (steps) => (
           <div className="flex flex-wrap gap-1">
-            {steps.map((s, i) => (
+            {(steps || []).map((s, i) => (
               <StatusPill key={i} label={s.label} variant="step" state={s.status} />
             ))}
           </div>
@@ -125,7 +135,7 @@ export default function Dashboard() {
       {
         key: "_action",
         label: "",
-        render: () => <ChevronRight className="w-4 h-4" />,
+        render: () => <ChevronRight className="w-4 h-4 text-gray-400" />,
       },
     ],
     []
@@ -140,7 +150,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Topbar
         tabs={activityData.tabs}
         activeTab={activeTab}
@@ -155,17 +165,18 @@ export default function Dashboard() {
         onSearchChange={setSearchQuery}
       />
 
-      <main className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <main className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {sections.map((section) => {
-          const rows = section.data.rows;
-
-          const filtered = filterRows(
-            applyChipFilter(rows, activeFilter),
-            searchQuery
-          );
-
+          const rows = section.data.rows || [];
+          const filtered = filterRows(applyChipFilter(rows, activeFilter), searchQuery);
+          
           const page = getPage(section.key);
           const { data: paged, totalPages } = paginate(filtered, page, PER_PAGE);
+
+          // IMPORTANT: Convert raw JSON column strings into objects for the DataTable
+          const columns = section.isNav 
+            ? navColumns 
+            : makeColumns(section.data.columns || []);
 
           return (
             <Panel
@@ -175,7 +186,9 @@ export default function Dashboard() {
               badge={filtered.length}
               fullWidth={section.key === "nav"}
               footer={{
-                current: `${paged.length}`,
+                current: filtered.length > 0 
+                  ? `${(page - 1) * PER_PAGE + 1}-${Math.min(page * PER_PAGE, filtered.length)}`
+                  : "0",
                 total: filtered.length,
                 page,
                 totalPages,
@@ -183,7 +196,7 @@ export default function Dashboard() {
               }}
             >
               <DataTable
-                columns={section.isNav ? navColumns : section.data.columns}
+                columns={columns}
                 data={paged}
                 onRowClick={(row) => modal.open(row)}
               />
@@ -195,7 +208,7 @@ export default function Dashboard() {
       <DetailModal
         isOpen={modal.isOpen}
         onClose={modal.close}
-        title={modal.data?.fund || ""}
+        title={modal.data?.fund || "Detail View"}
       >
         {modal.data?.modal && (
           <NavWorkflowModalContent data={modal.data.modal} />
