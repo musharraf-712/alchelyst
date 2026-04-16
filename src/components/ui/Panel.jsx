@@ -26,12 +26,18 @@ export default function Panel({
         <div className="flex justify-between p-2">
           <span>{footer.current} of {footer.total}</span>
           <div>
-            <button onClick={() => footer.onPageChange(footer.page - 1)}>
-              <ChevronLeft />
-            </button>
-            <button onClick={() => footer.onPageChange(footer.page + 1)}>
-              <ChevronRight />
-            </button>
+            
+         <div className="flex justify-between items-center w-full">
+  
+  <ChevronRight className="transform rotate-180" />
+  <ChevronLeft className="transform rotate-180" /> 
+  
+ 
+  
+</div>
+
+           
+            
           </div>
         </div>
       )}

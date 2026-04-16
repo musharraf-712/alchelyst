@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   BarChart3,
   GitBranch,
@@ -60,12 +60,27 @@ function applyChipFilter(rows, filter) {
   return rows;
 }
 
-// Fixed helper to ensure string columns are turned into objects the Table can read
+ 
 const makeColumns = (cols) =>
   cols.map((c) => {
-    if (typeof c === "object" && c.key) return c; // Already processed
+    if (typeof c === "object" && c.key) return c;
 
     const key = c.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    
+    if (key === "reportname") {
+      return {
+        key,
+        label: c,
+        render: (val, row) => (
+          <div className="flex flex-col">
+         
+            <span className=" text-gray-900">{val || row.name || "Untitled Report"}</span>
+            {row.type && <span className="text-[10px] text-gray-400 uppercase">{row.type}</span>}
+          </div>
+        ),
+      };
+    }
 
     if (key === "status" || key === "tags") {
       return {
@@ -75,9 +90,7 @@ const makeColumns = (cols) =>
           if (Array.isArray(val)) {
             return (
               <div className="flex flex-wrap gap-1">
-                {val.map((t, i) => (
-                  <StatusPill key={i} label={t} />
-                ))}
+                {val.map((t, i) => <StatusPill key={i} label={t} />)}
               </div>
             );
           }
@@ -141,6 +154,16 @@ export default function Dashboard() {
     []
   );
 
+  const scrollContainerRef = useRef(null);
+
+  const sectionRefs = {
+    nav: useRef(null),
+    other: useRef(null),
+    capital: useRef(null),
+    reports: useRef(null),
+    payments: useRef(null),
+  };
+
   const sections = [
     { key: "nav", data: activityData.navWorkflows, isNav: true },
     { key: "other", data: activityData.otherWorkflows },
@@ -149,70 +172,79 @@ export default function Dashboard() {
     { key: "payments", data: activityData.payments },
   ];
 
+  const handleTabChange = (index) => {
+    setActiveTab(index);
+
+    if (index === 0) {
+      // FIX: Scroll the CONTAINER, not the window
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      const targetKey = sections[index].key;
+      sectionRefs[targetKey].current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Topbar
-        tabs={activityData.tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+    <div className="h-screen flex flex-col bg-gray-100 overflow-hidden">
+      <div className="flex-none">
+        <Topbar tabs={activityData.tabs} activeTab={activeTab} onTabChange={handleTabChange} />
+        <FilterBar
+          filters={activityData.filters}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+      </div>
 
-      <FilterBar
-        filters={activityData.filters}
-        activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-      />
+<main ref={scrollContainerRef} className="flex-1 overflow-y-auto p-5 scroll-smooth">
+  {/* Increased gap from 4/6 to 10 for more margin between tables */}
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-[1600px] mx-auto">
+    {sections.map((section) => {
+      const rows = section.data.rows || [];
+      const filtered = filterRows(applyChipFilter(rows, activeFilter), searchQuery);
+      const page = getPage(section.key);
+      const { data: paged, totalPages } = paginate(filtered, page, PER_PAGE);
+      const columns = section.isNav ? navColumns : makeColumns(section.data.columns || []);
 
-      <main className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {sections.map((section) => {
-          const rows = section.data.rows || [];
-          const filtered = filterRows(applyChipFilter(rows, activeFilter), searchQuery);
-          
-          const page = getPage(section.key);
-          const { data: paged, totalPages } = paginate(filtered, page, PER_PAGE);
+      // ADDED: "reports" now joins nav and payments in full width
+      const isFullWidth = section.key === "nav" || section.key === "payments" || section.key === "reports";
 
-          // IMPORTANT: Convert raw JSON column strings into objects for the DataTable
-          const columns = section.isNav 
-            ? navColumns 
-            : makeColumns(section.data.columns || []);
+      return (
+        <div 
+          key={section.key} 
+          ref={sectionRefs[section.key]} 
+          // lg:col-span-2 makes it stretch across both columns
+          className={`scroll-mt-10 ${isFullWidth ? 'lg:col-span-2' : ''}`}
+        >
+          <Panel
+            title={section.data.title}
+            iconElement={SECTION_ICONS[section.data.icon]}
+            badge={filtered.length}
+            fullWidth={isFullWidth} 
+            footer={{
+              current: filtered.length > 0 ? `${(page - 1) * PER_PAGE + 1}-${Math.min(page * PER_PAGE, filtered.length)}` : "0",
+              total: filtered.length,
+              page,
+              totalPages,
+              onPageChange: (p) => setPage(section.key, p),
+            }}
+          >
+            <DataTable columns={columns} data={paged} onRowClick={(row) => modal.open(row)} />
+          </Panel>
+        </div>
+      );
+    })}
+  </div>
+</main>
 
-          return (
-            <Panel
-              key={section.key}
-              title={section.data.title}
-              iconElement={SECTION_ICONS[section.data.icon]}
-              badge={filtered.length}
-              fullWidth={section.key === "nav"}
-              footer={{
-                current: filtered.length > 0 
-                  ? `${(page - 1) * PER_PAGE + 1}-${Math.min(page * PER_PAGE, filtered.length)}`
-                  : "0",
-                total: filtered.length,
-                page,
-                totalPages,
-                onPageChange: (p) => setPage(section.key, p),
-              }}
-            >
-              <DataTable
-                columns={columns}
-                data={paged}
-                onRowClick={(row) => modal.open(row)}
-              />
-            </Panel>
-          );
-        })}
-      </main>
 
-      <DetailModal
-        isOpen={modal.isOpen}
-        onClose={modal.close}
-        title={modal.data?.fund || "Detail View"}
-      >
-        {modal.data?.modal && (
-          <NavWorkflowModalContent data={modal.data.modal} />
-        )}
+
+      <DetailModal isOpen={modal.isOpen} onClose={modal.close} title={modal.data?.fund || ""}>
+        {modal.data?.modal && <NavWorkflowModalContent data={modal.data.modal} />}
       </DetailModal>
     </div>
   );
