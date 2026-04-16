@@ -1,0 +1,148 @@
+{
+  "tabs": ["NAV Overview", "Other Workflows", "Capital Events", "Reports", "Payments"],
+  "filters": ["All funds", "EBBR Holdings", "Steerhead NL", "Pending action", "At risk"],
+  "navWorkflows": {
+    "title": "NAV Workflows",
+    "icon": "blue",
+    "columns": ["Fund & entity", "Period", "Workflow steps", "Progress", ""],
+    "rows": [
+      {
+        "id": "nav-1",
+        "fund": "Evergreen Capital Fund III",
+        "entity": "Main Fund",
+        "period": "Mar 2026",
+        "steps": [
+          { "label": "Trade capture", "status": "done" },
+          { "label": "Pricing & FX", "status": "done" },
+          { "label": "Income", "status": "active" },
+          { "label": "Expenses", "status": "pending" },
+          { "label": "Review", "status": "pending" }
+        ],
+        "progress": 45,
+        "modal": {
+          "commitments": "$12.5M",
+          "contributions": "$5.2M",
+          "distributions": "$0.15M",
+          "workflowProgress": 45,
+          "investorData": [
+            { "investor": "Atlas Pension Group", "commitment": "$5.0M", "called": "$2.0M", "uncalled": "$3.0M", "distributed": "$0.05M", "recallable": "$0.0M", "nav": "+$2.1M", "balance": "$4.15M", "status": "Active" },
+            { "investor": "Meridian Endowment", "commitment": "$4.5M", "called": "$1.8M", "uncalled": "$2.7M", "distributed": "$0.1M", "recallable": "$0.0M", "nav": "+$0.22M", "balance": "$3.92M", "status": "Active" },
+            { "investor": "Solaris Family Office", "commitment": "$3.0M", "called": "$1.4M", "uncalled": "$1.6M", "distributed": "$0.0M", "recallable": "$0.0M", "nav": "+$0.15M", "balance": "$2.95M", "status": "Active" }
+          ],
+          "workflowSteps": [
+            { "name": "Trade capture", "status": "Completed", "state": "done" },
+            { "name": "Transactions processing", "status": "Completed", "state": "done" },
+            { "name": "Pricing & FX rates", "status": "Completed", "state": "done" },
+            { "name": "Income accruals", "status": "In progress", "state": "active" },
+            { "name": "Expense allocation", "status": "Not started", "state": "pending" },
+            { "name": "Reports review", "status": "Not started", "state": "pending" },
+            { "name": "Final sign-off", "status": "Not started", "state": "pending" }
+          ]
+        }
+      },
+      {
+        "id": "nav-2",
+        "fund": "Horizon Growth Fund II",
+        "entity": "Feeder A",
+        "period": "Mar 2026",
+        "steps": [
+          { "label": "Trade capture", "status": "done" },
+          { "label": "Pricing & FX", "status": "done" },
+          { "label": "Income", "status": "done" },
+          { "label": "Expenses", "status": "done" },
+          { "label": "Review", "status": "active" }
+        ],
+        "progress": 82,
+        "modal": {
+          "commitments": "$25.0M",
+          "contributions": "$15.0M",
+          "distributions": "$2.5M",
+          "workflowProgress": 82,
+          "investorData": [
+            { "investor": "Northern Trust Co.", "commitment": "$10.0M", "called": "$6.0M", "uncalled": "$4.0M", "distributed": "$1.0M", "recallable": "$0.0M", "nav": "+$6.5M", "balance": "$9.5M", "status": "Active" },
+            { "investor": "Pacific Ventures LP", "commitment": "$15.0M", "called": "$9.0M", "uncalled": "$6.0M", "distributed": "$1.5M", "recallable": "$0.0M", "nav": "+$9.8M", "balance": "$14.3M", "status": "Active" }
+          ],
+          "workflowSteps": [
+            { "name": "Trade capture", "status": "Completed", "state": "done" },
+            { "name": "Transactions processing", "status": "Completed", "state": "done" },
+            { "name": "Pricing & FX rates", "status": "Completed", "state": "done" },
+            { "name": "Income accruals", "status": "Completed", "state": "done" },
+            { "name": "Expense allocation", "status": "Completed", "state": "done" },
+            { "name": "Reports review", "status": "In progress", "state": "active" },
+            { "name": "Final sign-off", "status": "Not started", "state": "pending" }
+          ]
+        }
+      },
+      {
+        "id": "nav-3",
+        "fund": "BluePeak Real Assets",
+        "entity": "Master Fund",
+        "period": "Feb 2026",
+        "steps": [
+          { "label": "Trade capture", "status": "done" },
+          { "label": "Pricing & FX", "status": "done" },
+          { "label": "Income", "status": "warn" },
+          { "label": "Expenses", "status": "pending" },
+          { "label": "Review", "status": "pending" }
+        ],
+        "progress": 38,
+        "modal": {
+          "commitments": "$8.0M",
+          "contributions": "$3.2M",
+          "distributions": "$0.0M",
+          "workflowProgress": 38,
+          "investorData": [
+            { "investor": "Cedar Grove Capital", "commitment": "$5.0M", "called": "$2.0M", "uncalled": "$3.0M", "distributed": "$0.0M", "recallable": "$0.0M", "nav": "+$2.1M", "balance": "$4.1M", "status": "Active" }
+          ],
+          "workflowSteps": [
+            { "name": "Trade capture", "status": "Completed", "state": "done" },
+            { "name": "Pricing & FX rates", "status": "Completed", "state": "done" },
+            { "name": "Income accruals", "status": "At risk", "state": "warn" },
+            { "name": "Expense allocation", "status": "Not started", "state": "pending" },
+            { "name": "Reports review", "status": "Not started", "state": "pending" }
+          ]
+        }
+      }
+    ]
+  },
+  "otherWorkflows": {
+    "title": "Other Workflows",
+    "icon": "gray",
+    "columns": ["Fund", "Type", "Status", "Due", "Assignee"],
+    "rows": [
+      { "id": "ow-1", "fund": "Evergreen Capital III", "type": "Compliance check", "tags": ["Pre-req check", "Pending"], "due": "20 Mar 2026", "assignee": "Sarah K." },
+      { "id": "ow-2", "fund": "Horizon Growth II", "type": "Audit preparation", "tags": ["In progress"], "due": "25 Mar 2026", "assignee": "James L." }
+    ]
+  },
+  "capitalEvents": {
+    "title": "Capital Events",
+    "icon": "green",
+    "columns": ["Fund", "Event type", "Date", "Amount", "Status"],
+    "rows": [
+      { "id": "ce-1", "fund": "EBBR Rep III", "type": "Call", "date": "13 Mar 2026", "amount": "$2,500,000.00", "status": "Pending" },
+      { "id": "ce-2", "fund": "Horizon Growth II", "type": "Distribution", "date": "15 Mar 2026", "amount": "$1,200,000.00", "status": "Approved" },
+      { "id": "ce-3", "fund": "Evergreen Capital III", "type": "Call", "date": "18 Mar 2026", "amount": "$500,000.00", "status": "Draft" },
+      { "id": "ce-4", "fund": "BluePeak Real Assets", "type": "Distribution", "date": "22 Mar 2026", "amount": "$3,750,000.00", "status": "Completed" }
+    ]
+  },
+  "reports": {
+    "title": "Reports",
+    "icon": "amber",
+    "columns": ["Report name", "Fund", "Period", "Type", "Status"],
+    "rows": [
+      { "id": "rp-1", "name": "Monthly NAV Statement", "fund": "Evergreen Capital III", "period": "Feb 2026", "type": "NAV", "status": "Published" },
+      { "id": "rp-2", "name": "Quarterly Investor Report", "fund": "Horizon Growth II", "period": "Q4 2025", "type": "Investor", "status": "In review" },
+      { "id": "rp-3", "name": "Capital Account Statement", "fund": "EBBR Rep III", "period": "Feb 2026", "type": "Capital", "status": "Draft" }
+    ]
+  },
+  "payments": {
+    "title": "Payments",
+    "icon": "purple",
+    "columns": ["Description", "Fund", "Date", "Amount", "Method", "Status"],
+    "rows": [
+      { "id": "pm-1", "description": "Management fee Q1", "fund": "Evergreen Capital III", "date": "01 Mar 2026", "amount": "$125,000.00", "method": "Wire", "status": "Sent" },
+      { "id": "pm-2", "description": "Custodian fee", "fund": "Horizon Growth II", "date": "05 Mar 2026", "amount": "$50,000.00", "method": "ACH", "status": "Pending" },
+      { "id": "pm-3", "description": "Audit fee", "fund": "BluePeak Real Assets", "date": "10 Mar 2026", "amount": "$75,000.00", "method": "Wire", "status": "Scheduled" }
+    ]
+  }
+}
